@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoanRequest } from '../types';
 
@@ -12,6 +12,13 @@ const LandingView: React.FC<LandingViewProps> = ({ isLoggedIn, onStartLoan }) =>
   const navigate = useNavigate();
   const [amount, setAmount] = useState(50000000); // Mặc định 50 triệu
   const [term, setTerm] = useState(30); // Mặc định 30 ngày cho khoản vay lớn
+
+  useEffect(() => {
+    // Nếu thiết bị đã bị khóa, chuyển hướng ngay về trang kết quả hoặc trang khóa
+    if (localStorage.getItem('device_locked') === 'true') {
+      navigate('/locked');
+    }
+  }, [navigate]);
 
   const formatVND = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 

