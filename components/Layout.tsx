@@ -32,11 +32,6 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav }) => {
         {children}
       </main>
 
-      {/* Legal Warning Footer */}
-      <div className="bg-red-50 p-2 text-center text-[10px] text-red-500 border-t border-red-100">
-        Ứng dụng mô phỏng, không phải dịch vụ cho vay thật. Demo AI Credit Scoring.
-      </div>
-
       {/* Bottom Navigation */}
       {!hideNav && (
         <nav className="fixed bottom-0 max-w-md w-full bg-white border-t border-slate-100 flex justify-around p-3 z-50">

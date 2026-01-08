@@ -16,7 +16,7 @@ const ResultView: React.FC<ResultViewProps> = ({ history }) => {
   const lastResult: Partial<CreditScoreResult> = rawResult ? JSON.parse(rawResult) : {};
 
   // Nội dung mặc định chuẩn theo yêu cầu của khách hàng
-  const DEFAULT_REASON = "Điểm tín dụng rất tốt, nhưng cần nâng cấp lên để đủ 90 tín dụng để được giải ngân lập tức.";
+  const DEFAULT_REASON = "Điểm tín dụng rất tốt, nhưng cần nâng cấp thêm 1 chút cho đủ 90 tín dụng để được giải ngân lập tức.";
   
   // Kiểm tra nếu reason bị rỗng hoặc không có thì dùng mặc định
   const displayReason = (lastResult.reason && lastResult.reason.trim().length > 0) 
